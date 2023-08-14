@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%PUBLIC_URL%/icon.png" />
+  <link rel="apple-touch-icon" href="touch-icon-iphone.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="touch-icon-ipad.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="touch-icon-iphone-retina.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="touch-icon-ipad-retina.png">
+  <link href="%PUBLIC_URL%/maskable_icon_x384.png" sizes="2048x2732" rel="apple-touch-startup-image" />
+  <link href="%PUBLIC_URL%/maskable_icon_x384.png" sizes="1668x2224" rel="apple-touch-startup-image" />
+  <link href="%PUBLIC_URL%/maskable_icon_x384.png" sizes="1536x2048" rel="apple-touch-startup-image" />
+  <link href="%PUBLIC_URL%/maskable_icon_x384.png" sizes="1125x2436" rel="apple-touch-startup-image" />
+  <link href="%PUBLIC_URL%/maskable_icon_x384.png" sizes="1242x2208" rel="apple-touch-startup-image" />
+  <link href="%PUBLIC_URL%/maskable_icon_x384.png" sizes="750x1334" rel="apple-touch-startup-image" />
+  <link href="%PUBLIC_URL%/maskable_icon_x384.png" sizes="640x1136" rel="apple-touch-startup-image" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="Web site created using create-react-app" />
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.4.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('Service worker registrado com sucesso:', registration);
+          })
+          .catch((error) => {
+            console.log('Falha ao registrar o service worker:', error);
+          });
+      });
+    }
+  </script>
+
+  <title>Uffa!</title>
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="root"></div>
+  <div id="app"></div>
+
+</body>
+
+</html>

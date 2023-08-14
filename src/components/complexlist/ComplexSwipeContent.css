@@ -1,0 +1,80 @@
+.transaction-item {
+  margin-bottom: 8px; /* Defina o espaçamento vertical desejado */
+}
+
+
+.complex-swipeable-list__item-content-left {
+    background-color: rgb(44, 11, 167);
+    color:  rgb(221, 220, 220);
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+  }
+  
+  .complex-swipeable-list__item-content-right {
+    background-color: rgb(200, 0, 0);
+    color: #f5f5f5;
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: flex-end;
+  }
+  
+  
+  .complex-swipeable-list__content {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    font-weight: 300;
+    font-size: 14px;
+    width: 64px;
+    max-width: 64px;
+    text-align: center;
+    padding: 4px;
+    padding-top: 8px;
+  }
+  
+  .complex-swipeable-list__icon {
+    fill: white;
+    width: 32px;
+    height: 32px;
+    margin-top: -4px;
+  }
+  
+  .complex-swipeable-list__container {
+    width: 100%;
+    min-height: 160px;
+    background-color: #f5f5f5; /* Cor de fundo desejada */
+    padding: 1rem; /* Espaçamento interno desejado */
+    border-radius: 10px; /* Cantos arredondados */
+    margin: 24px 0;
+    overflow-y: scroll;
+    padding-bottom: 40px;
+  }
+  
+  .floating-button {
+    position: absolute;
+    right: 20px; /* ajuste a distância horizontal conforme necessário */
+    bottom: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: teal;
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+  }
+  
+  .floating-button:hover {
+    background-color: darkcyan;
+  }
