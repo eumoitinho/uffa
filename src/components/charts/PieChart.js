@@ -6,7 +6,6 @@ const PieChart = ({ transactions }) => {
   const chartRef = useRef(null);
 
   // Função para formatar os dados das transações para o gráfico
-  // Função para formatar os dados das transações para o gráfico
 const formatDataForChart = (transactions) => {
   const categoryTotals = {};
 
@@ -22,8 +21,8 @@ const formatDataForChart = (transactions) => {
   const data = Object.values(categoryTotals);
 
   // Define as cores de fundo para cada fatia do gráfico
-  const backgroundColor = ['red', 'blue', 'yellow'];
-  // Você pode adicionar mais cores ou criar lógicas para gerar cores aleatórias
+  const backgroundColor = ['green', 'blue', 'yellow'];
+
 
   return {
     labels,
@@ -56,8 +55,8 @@ const formatDataForChart = (transactions) => {
         type: 'doughnut', // Tipo do gráfico (doughnut para gráfico de rosquinha)
         data: formatDataForChart(transactions), // Dados formatados para o gráfico
         options: {
-          // Configurações do gráfico
-          // Aqui você pode definir opções específicas para a aparência e comportamento do gráfico
+          responsive: true, 
+          maintainAspectRatio: false,
         },
       });
       console.log(chartInstance);
