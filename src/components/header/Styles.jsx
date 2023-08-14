@@ -18,11 +18,12 @@ export const Container = styled.div`
 `;
 
 export const LogoContainer = styled.div`
-  margin-left: 88px;
-  margin-top: 30px;
+  margin: auto;
+  margin-top: 25px;
+  position: relative;
   width: 100px;
   height: 100px;
-  display: flex;
+  align-items: center;
   justify-content: center;
 
 `;
