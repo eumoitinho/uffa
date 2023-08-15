@@ -16,7 +16,7 @@ const Header = () => {
       <FaBars onClick={showSiderbar} />
       <LogoContainer>
       <Image
-       src={require("file:///D:/TCC/logo-png.png")}
+       src={process.env.PUBLIC_URL + '/logo-png.png'} alt="Logo"
                     />
       </LogoContainer>
       {sidebar && <Sidebar active={setSidebar} />}
@@ -25,23 +25,3 @@ const Header = () => {
 }
 
 export default Header;
-
-/*<div>
-            <Card shadow="md" p={20} className="custom-card">
-                <div className="flex justify-between">
-                    <i className="ri-restart-line" onClick={handleRefreshClick}></i>
-                    <Group grow>
-                        <Text paddingRight="30px">{user?.name}</Text>
-                        <i className="ri-logout-box-r-line" onClick={logOut}></i>
-                    </Group>
-                </div>
-                <div className="flex items-center justify-center">
-                    <Image
-                        src={require("file:///D:/TCC/logo-png.png")}
-                        height={45}
-                        width={100}
-                        className="mx-auto"
-                    />
-                </div>
-            </Card>
-        </div>*/

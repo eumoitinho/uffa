@@ -126,7 +126,7 @@ function Register() {
             >
                 <Center>
                     <Image
-                        src={require("file:///D:/TCC/logo-png.png")}
+                        src={process.env.PUBLIC_URL + '/logo-png.png'} alt="Logo"
                         height={45}
                         width={100}
                     />
