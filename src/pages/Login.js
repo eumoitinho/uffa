@@ -1,87 +1,80 @@
 import React from 'react';
-import { useForm } from '@mantine/form'; // Importação do hook useForm do pacote @mantine/form
+import { useForm } from '@mantine/form';
 import { Link, useNavigate } from 'react-router-dom';
-import { Card, Stack, TextInput, Divider, Button, Anchor, Image } from '@mantine/core'; // Importação de componentes do pacote @mantine/core
-import { collection, getDocs, where, query } from 'firebase/firestore'; // Importação de funções relacionadas ao Firestore do Firebase
-import { fireDb } from '../firebaseConfig'; // Importação da configuração do Firebase
-import cryptojs from 'crypto-js'; // Importação da biblioteca crypto-js para criptografia/descriptografia
-import { notifications } from '@mantine/notifications'; // Importação do módulo de notificações do pacote @mantine/notifications
+import { Card, Stack, TextInput, Button } from '@mantine/core';
+import { loginUser } from '../services/apiService';
+import { notifications } from '@mantine/notifications';
 import { useDispatch } from 'react-redux';
 import { HideLoading, ShowLoading } from '../redux/alertsSlice';
-import { Center } from '@mantine/core';
+import { Center, Image } from '@mantine/core';
 
 function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const loginform = useForm({ // Inicialização do hook useForm para criar um formulário controlado
+  const loginform = useForm({
     initialValues: {
       email: "",
       password: "",
     },
   });
 
-
-  const onSubmit = async (event) => { // Definição da função de submissão do formulário (assíncrona)
-    event.preventDefault(); // Impedir o comportamento padrão de envio do formulário
+  const onSubmit = async (event) => {
+    event.preventDefault();
 
     try {
       dispatch(ShowLoading());
-      const qry = query( // Criação de uma consulta ao Firestore para encontrar usuários com base no email fornecido
-        collection(fireDb, "users"), // Coleção "users" no Firestore
-        where("email", "==", loginform.values.email), // Filtro para encontrar usuários com o email fornecido no formulário
-      );
-      const existingusers = await getDocs(qry); // Execução da consulta e aguarda a resposta
 
-      if (existingusers.size > 0) { // Verifica se foram encontrados usuários com base no tamanho da resposta
-        // Descriptografando a senha do usuário armazenada no Firestore
-        const decryptedPassword = cryptojs.AES.decrypt(
-          existingusers.docs[0].data().password, // Senha criptografada armazenada no Firestore
-          "uffa" // Chave de descriptografia
-        ).toString(cryptojs.enc.Utf8);
+      const response = await loginUser(loginform.values.email, loginform.values.password);
 
-        if (decryptedPassword === loginform.values.password) { // Verifica se a senha descriptografada é igual à senha fornecida no formulário
-          notifications.show({ // Exibe uma notificação de sucesso
-            id: 'Usuário logado',
-            message: 'Você realizou login!',
-            color: 'teal',
-          });
+      if (response && response.user) {
+        notifications.show({
+          id: 'Usuário logado',
+          message: 'Você realizou login!',
+          color: 'teal',
+        });
 
-          const dataToPutInLocalStorage = { // Cria um objeto com informações do usuário para armazenar no localStorage
-            name: existingusers.docs[0].data().name,
-            email: existingusers.docs[0].data().email,
-            id: existingusers.docs[0].id,
-          };
-          localStorage.setItem("user", JSON.stringify(dataToPutInLocalStorage)); // Armazena os dados do usuário no localStorage
-          navigate("/");
-        } else { // Senha inválida
-          notifications.show({ // Exibe uma notificação de erro
-            id: 'Credenciais invalidas',
-            message: 'Credenciais inválidas!',
-            color: 'red',
-            loading: +true, // Define o estado de carregamento para verdadeiro (conversão de booleano para número)
-          });
-        }
-      } else { // Usuário não encontrado
-        notifications.show({ // Exibe uma notificação informando que o usuário não foi encontrado
+        const dataToPutInLocalStorage = {
+          name: response.user.name,
+          email: response.user.email,
+          id: response.user.id,
+        };
+        localStorage.setItem("user", JSON.stringify(dataToPutInLocalStorage));
+        navigate("/");
+      } else {
+        notifications.show({
+          id: 'Credenciais invalidas',
+          message: 'Credenciais inválidas!',
+          color: 'red',
+        });
+      }
+      dispatch(HideLoading());
+    } catch (error) {
+      dispatch(HideLoading());
+      if (error.response?.status === 401) {
+        notifications.show({
+          id: 'Credenciais invalidas',
+          message: 'Credenciais inválidas!',
+          color: 'red',
+        });
+      } else if (error.response?.status === 404) {
+        notifications.show({
           id: 'Usuário não encontrado',
           message: 'Usuário não encontrado!',
           color: "red",
         });
+      } else {
+        notifications.show({
+          id: 'Erro',
+          message: 'Oops! Algo deu errado...',
+          color: 'red',
+        });
       }
-      dispatch(HideLoading());
-    } catch (error) { // Tratamento de erro genérico
-      dispatch(HideLoading());
-      notifications.show({ // Exibe uma notificação de erro genérico
-        id: 'Erro',
-        message: 'Oops! Algo deu errado...',
-        color: 'red',
-      });
     }
   };
 
   return (
     <div className="flex h-screen justify-center items-center">
-      <Card xs={{ // Estilos personalizados para o componente Card
+      <Card xs={{
         width: 400,
         padding: "sm",
       }} shadow="lg">

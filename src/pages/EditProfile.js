@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Card, Stack, TextInput, Divider, Button, Center } from '@mantine/core';
 import Header from '../components/header/Header';
 import { useForm } from '@mantine/form';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getDoc, updateDoc, doc } from 'firebase/firestore';
-import cryptojs from "crypto-js";
-import { fireDb } from '../firebaseConfig';
+import { getUserById, updateUser, uploadUserPhoto } from '../services/apiService';
 import { useDispatch } from 'react-redux';
 import { notifications } from '@mantine/notifications';
 import { HideLoading, ShowLoading } from '../redux/alertsSlice';
-import { getDataUserFromFirebase } from '../services/firebaseService';
 import { FaPencilAlt, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 function EditProfile() {
@@ -18,7 +14,7 @@ function EditProfile() {
   const navigate = useNavigate();
   const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [userDataLoaded, setUserDataLoaded] = useState(false); // Estado para controlar se os dados do usuário já foram carregados
+  const [userDataLoaded, setUserDataLoaded] = useState(false);
 
   const editform = useForm({
     initialValues: {
@@ -32,29 +28,26 @@ function EditProfile() {
     },
   });
   const loggedUser = JSON.parse(localStorage.getItem('user'));
-  console.log(loggedUser.id);
-
-  const decryptPassword = (encryptedPassword) => {
-    const bytes = cryptojs.AES.decrypt(encryptedPassword, "uffa");
-    return bytes.toString(cryptojs.enc.Utf8);
-  };
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const userDataFromFirebase = await getDataUserFromFirebase(loggedUser.id);
-      console.log(userDataFromFirebase);
-      const decryptedUserData = {
-        ...userDataFromFirebase[0],
-        password: decryptPassword(userDataFromFirebase[0].password), // Descriptografar a senha
-      };
-      setUserData(decryptedUserData);
-      editform.setValues(decryptedUserData);
-      setUserDataLoaded(true);
+      try {
+        const userDataFromApi = await getUserById(loggedUser.id);
+        const decryptedUserData = {
+          ...userDataFromApi,
+          password: '', // Senha não vem do backend por segurança
+        };
+        setUserData(decryptedUserData);
+        editform.setValues(decryptedUserData);
+        setUserDataLoaded(true);
+      } catch (error) {
+        console.error('Erro ao buscar dados do usuário:', error);
+      }
     };
-  
+
     fetchUserData();
   }, []);
-  
+
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
@@ -62,80 +55,62 @@ function EditProfile() {
       setSelectedPhotoFile(file);
     }
   };
+
   const onSubmit = async (event) => {
     event.preventDefault();
-  
+
     try {
-      // Atualizar os dados do usuário no Firestore
       dispatch(ShowLoading());
-  
-      // Obter o ID do usuário logado
+
       const userId = loggedUser.id;
-  
+
       // Verificar se o usuário deseja atualizar a foto de perfil
       if (selectedPhotoFile) {
-        const storage = getStorage();
-        const storageRef = ref(storage, `user_photos/${editform.values.email}`);
-        await uploadBytes(storageRef, selectedPhotoFile);
-        const photoUrl = await getDownloadURL(storageRef);
-  
-        // Atualizar a URL da foto no Firestore
-        await updateDoc(doc(fireDb, 'users', userId), {
-          photo: photoUrl,
-        });
+        try {
+          await uploadUserPhoto(userId, selectedPhotoFile);
+        } catch (photoError) {
+          console.log('Erro ao fazer upload da foto:', photoError);
+        }
       }
-  
-      // Caso não haja uma nova foto selecionada, apenas atualizar os outros dados no Firestore
+
+      // Preparar dados para atualização
       const dataToUpdate = {};
-  
-      // Verificar quais campos foram alterados pelo usuário e incluir no objeto a ser atualizado
+
       if (editform.values) {
         Object.keys(editform.values).forEach((key) => {
-          // Verificar se o valor atual é diferente do valor original e se o campo não é senha ou foto
-          if (editform.values[key] !== loggedUser[key] && key !== 'password' && key !== 'photo') {
-            // Adicione apenas os campos que foram alterados e que não sejam senha ou foto
-            dataToUpdate[key] = editform.values[key];
+          if (editform.values[key] !== loggedUser[key] && key !== 'photo') {
+            if (key === 'password' && editform.values[key]) {
+              dataToUpdate[key] = editform.values[key];
+            } else if (key !== 'password') {
+              dataToUpdate[key] = editform.values[key];
+            }
           }
         });
       }
-  
-      // Verificar se a senha foi preenchida e incluir no objeto a ser atualizado
-      if (editform.values.password) {
-        // Se a senha foi preenchida, criptografa-a antes de atualizar
-        dataToUpdate.password = cryptojs.AES.encrypt(
-          editform.values.password,
-          "uffa"
-        ).toString();
+
+      // Atualizar usuário via API
+      if (Object.keys(dataToUpdate).length > 0) {
+        await updateUser(userId, dataToUpdate);
       }
-  
-      await updateDoc(doc(fireDb, 'users', userId), dataToUpdate);
-  
-      // Obter os dados atualizados do usuário do Firestore
-      const userDocRef = doc(fireDb, 'users', userId);
-      const userDocSnap = await getDoc(userDocRef);
-  
-      if (userDocSnap.exists()) {
-        const updatedUserData = userDocSnap.data();
-  
-        // Atualizar o localStorage apenas com o ID, nome e email do usuário
-        const dataToPutInLocalStorage = {
-          id: userId,
-          name: updatedUserData.name,
-          email: updatedUserData.email,
-        };
-        localStorage.setItem("user", JSON.stringify(dataToPutInLocalStorage));
-      }
-  
+
+      // Atualizar localStorage
+      const updatedUserData = await getUserById(userId);
+      const dataToPutInLocalStorage = {
+        id: userId,
+        name: updatedUserData.name,
+        email: updatedUserData.email,
+      };
+      localStorage.setItem("user", JSON.stringify(dataToPutInLocalStorage));
+
       navigate("/");
-  
+
       notifications.show({
         id: 'Perfil atualizado',
         message: 'Perfil atualizado com sucesso!',
         color: 'teal',
       });
-  
+
       dispatch(HideLoading());
-      navigate('/'); // Redirecionar de volta à página de perfil após a atualização
     } catch (error) {
       dispatch(HideLoading());
       console.log(error);
@@ -146,13 +121,12 @@ function EditProfile() {
       });
     }
   };
-  
+
 
   const [sidebar, setSidebar] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [photoChanged, setPhotoChanged] = useState(false);
 
-  // Função para alternar a visibilidade da senha
   const togglePasswordVisibility = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
   };
@@ -198,7 +172,6 @@ function EditProfile() {
           </Center>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ position: 'relative' }}>
-              {/* Campo para exibir a foto de perfil */}
               <div
                 style={{
                   width: '100px',
@@ -213,7 +186,6 @@ function EditProfile() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </div>
-              {/* Ícone de lápis para editar a foto */}
               {!editMode.photo && (
                 <Button
                   style={{ position: 'absolute', top: '90%', left: '90%', transform: 'translate(-50%, -50%)', zIndex: 1 }}
@@ -321,7 +293,7 @@ function EditProfile() {
                   </Button>
                   <Button
                     onClick={() => {
-                      editform.setValues(userData); // Restaurar valores originais ao cancelar edição
+                      editform.setValues(userData);
                       toggleEditMode('name');
                       toggleEditMode('email');
                       toggleEditMode('password');

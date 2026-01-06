@@ -3,11 +3,9 @@ import Header from '../components/header/Header';
 import { Badge, Box, Card, Modal } from '@mantine/core';
 import TransactionForm from '../components/transactions/TransactionForm';
 import { Button } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
-import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { getTransactions } from '../services/apiService';
 import { useDispatch } from 'react-redux';
 import { HideLoading, ShowLoading } from '../redux/alertsSlice';
-import { fireDb } from '../firebaseConfig';
 import TransactionsTable from '../components/transactions/TransactionsTable';
 import { getSavedTransactionsFromIndexedDB, removeFromIndexedDB } from '../services/indexedDbService';
 import DisplayBudget from '../components/budgetdisplay/BudgetDisplay';
@@ -43,30 +41,27 @@ function Home() {
       console.log(mergedData)
 
       if (navigator.onLine) {
-        // Buscar transações do Firebase Firestore
-        const firestoreQuery = query(collection(fireDb, `users/${user.id}/transactions`), orderBy('date', 'desc'));
-        const firestoreResponse = await getDocs(firestoreQuery);
-        const firestoreData = firestoreResponse.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        // Buscar transações da API PostgreSQL
+        const apiData = await getTransactions(user.id);
+        const formattedData = apiData.map((transaction) => ({
+          id: transaction.id,
+          ...transaction,
         }));
-
-         
 
         // Buscar transações do IndexedDB
         const indexedDBData = await getSavedTransactionsFromIndexedDB();
         console.log('ONLINE-no indexedb:', indexedDBData)
 
         indexedDBData.forEach((indexedDBTransaction) => {
-          const existingTransaction = firestoreData.find(
+          const existingTransaction = formattedData.find(
             (transaction) => transaction.id === indexedDBTransaction.id
           );
           if (!existingTransaction) {
             removeFromIndexedDB(indexedDBTransaction.id);
           }
         })
-        // Combinar transações do Firestore e do IndexedDB
-        mergedData = mergeTransactions(firestoreData, indexedDBData);
+        // Combinar transações da API e do IndexedDB
+        mergedData = mergeTransactions(formattedData, indexedDBData);
 
       } else {
         const indexedDBData = await getSavedTransactionsFromIndexedDB();
@@ -90,7 +85,7 @@ function Home() {
           filterDate = moment().subtract(365, "days").format("YYYY-MM-DD");
         }
         if (filterDate) {
-          filteredData = filteredData.filter((transaction) => transaction.date >= filterDate); 
+          filteredData = filteredData.filter((transaction) => transaction.date >= filterDate);
         }
       } else {
         const fromDate = moment(filters.dateRange[0]).format("YYYY-MM-DD");
@@ -100,7 +95,7 @@ function Home() {
             moment(transaction.date).isBetween(moment(fromDate), moment(toDate), null, "[]")
         );
       }
-     
+
       const sortedData = filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
       console.log('Dados finais:', sortedData)
 
@@ -112,11 +107,11 @@ function Home() {
       dispatch(HideLoading());
     }
   };
-  const mergeTransactions = (firestoreData, indexedDBData) => {
-    const mergedData = [...firestoreData];
+  const mergeTransactions = (apiData, indexedDBData) => {
+    const mergedData = [...apiData];
 
     indexedDBData.forEach((indexedDBTransaction) => {
-      const existingTransactionIndex = firestoreData.findIndex(
+      const existingTransactionIndex = apiData.findIndex(
         (transaction) => transaction.id === indexedDBTransaction.id
       );
       console.log(existingTransactionIndex)
@@ -125,7 +120,7 @@ function Home() {
       } else {
         // Atualizar transação existente com os dados do IndexedDB
         mergedData[existingTransactionIndex] = {
-          ...firestoreData[existingTransactionIndex],
+          ...apiData[existingTransactionIndex],
           ...indexedDBTransaction,
 
         };
@@ -158,7 +153,7 @@ function Home() {
     setShowForm(true);
     setFormMode('add');
   };
-  
+
   return (
     <Box>
           <Header sidebar={sidebar} setSidebar={setSidebar}/>
@@ -198,7 +193,7 @@ function Home() {
           setShowForm={setShowForm}
           getData={getData}
         />
-        
+
       </Card>
       <Modal centered size="lg" title={formMode === 'add' ? 'Adicione uma transação' : formMode === 'view' ? 'Detalhes' : 'Edite uma transação'} opened={showForm} onClose={() => setShowForm(false)}>
         <TransactionForm
