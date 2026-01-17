@@ -87,6 +87,11 @@ As rotas sob `/api/users` exigem `Authorization: Bearer <token>`, retornado no l
 | POST | `/api/openfinance/sync` | Sincronizar transações |
 | POST | `/api/openfinance/webhook` | Webhook de eventos Belvo |
 
+Exemplo de body para gerar token:
+```json
+{ "name": "Seu Nome", "cpf": "00000000000" }
+```
+
 ## Estrutura do Banco de Dados
 
 ### Tabela `users`
