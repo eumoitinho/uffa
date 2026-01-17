@@ -3,6 +3,9 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const transactionController = require('../controllers/transactionController');
 const upload = require('../middleware/upload');
+const authMiddleware = require('../middleware/auth');
+
+router.use(authMiddleware);
 
 // Rotas de usuário
 router.get('/:id', userController.getById);

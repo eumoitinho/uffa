@@ -1,35 +1,37 @@
 import React from 'react';
-import { useForm } from '@mantine/form';
-import { Link, useNavigate } from 'react-router-dom';
-import { Card, Stack, TextInput, Button } from '@mantine/core';
-import { loginUser } from '../services/apiService';
+import { useNavigate } from 'react-router-dom';
+import { Card, Stack, Button, Center, Text, Image } from '@mantine/core';
+import { loginWithGoogle } from '../services/apiService';
 import { notifications } from '@mantine/notifications';
 import { useDispatch } from 'react-redux';
 import { HideLoading, ShowLoading } from '../redux/alertsSlice';
-import { Center, Image } from '@mantine/core';
+import { GoogleLogin } from '@react-oauth/google';
 
 function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const loginform = useForm({
-    initialValues: {
-      email: "",
-      password: "",
-    },
-  });
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
-  const onSubmit = async (event) => {
-    event.preventDefault();
-
+  const handleGoogleSuccess = async (credentialResponse) => {
     try {
       dispatch(ShowLoading());
 
-      const response = await loginUser(loginform.values.email, loginform.values.password);
+      if (!credentialResponse?.credential) {
+        notifications.show({
+          id: 'google-credencial',
+          message: 'Não foi possível obter a credencial do Google.',
+          color: 'red',
+        });
+        dispatch(HideLoading());
+        return;
+      }
+
+      const response = await loginWithGoogle(credentialResponse.credential);
 
       if (response && response.user) {
         notifications.show({
           id: 'Usuário logado',
-          message: 'Você realizou login!',
+          message: 'Login com Google realizado com sucesso!',
           color: 'teal',
         });
 
@@ -37,44 +39,39 @@ function Login() {
           name: response.user.name,
           email: response.user.email,
           id: response.user.id,
+          photo: response.user.photo,
         };
         localStorage.setItem("user", JSON.stringify(dataToPutInLocalStorage));
-        navigate("/");
+        localStorage.setItem("token", response.token);
+
+        if (response.needsOnboarding) {
+          localStorage.setItem("needsOnboarding", "true");
+          navigate("/onboarding");
+        } else {
+          localStorage.removeItem("needsOnboarding");
+          navigate("/");
+        }
       } else {
         notifications.show({
-          id: 'Credenciais invalidas',
-          message: 'Credenciais inválidas!',
+          id: 'Login inválido',
+          message: 'Não foi possível autenticar com o Google.',
           color: 'red',
         });
       }
       dispatch(HideLoading());
     } catch (error) {
       dispatch(HideLoading());
-      if (error.response?.status === 401) {
-        notifications.show({
-          id: 'Credenciais invalidas',
-          message: 'Credenciais inválidas!',
-          color: 'red',
-        });
-      } else if (error.response?.status === 404) {
-        notifications.show({
-          id: 'Usuário não encontrado',
-          message: 'Usuário não encontrado!',
-          color: "red",
-        });
-      } else {
-        notifications.show({
-          id: 'Erro',
-          message: 'Oops! Algo deu errado...',
-          color: 'red',
-        });
-      }
+      notifications.show({
+        id: 'Erro',
+        message: 'Oops! Algo deu errado...',
+        color: 'red',
+      });
     }
   };
 
   return (
     <div className="flex h-screen justify-center items-center">
-      <Card xs={{
+      <Card sx={{
         width: 400,
         padding: "sm",
       }} shadow="lg">
@@ -88,25 +85,30 @@ function Login() {
         <Center>
         <h1>Bem-vindo!</h1>
         </Center>
-        <form action="" onSubmit={onSubmit}>
-          <Stack>
-            <TextInput
-              label="Email"
-              placeholder="Digite seu email"
-              name="email"
-              {...loginform.getInputProps("email")}
+        <Stack align="center" spacing="md" mt="md">
+          <Text size="sm" color="dimmed">
+            Entre com sua conta Google para continuar.
+          </Text>
+          {googleClientId ? (
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => {
+                notifications.show({
+                  id: 'google-erro',
+                  message: 'Falha ao autenticar com o Google.',
+                  color: 'red',
+                });
+              }}
+              theme="outline"
+              size="large"
+              shape="pill"
             />
-            <TextInput
-              label="Senha"
-              placeholder="Digite sua senha"
-              type="password"
-              name="password"
-              {...loginform.getInputProps("password")}
-            />
-            <Button type='submit' variant='outline' color='teal'>Entrar</Button>
-            <Button component={Link} to="/register" color= 'teal'>Não possui uma conta? Registre-se aqui!</Button>
-          </Stack>
-        </form>
+          ) : (
+            <Button variant="outline" color="teal" disabled>
+              Configure REACT_APP_GOOGLE_CLIENT_ID
+            </Button>
+          )}
+        </Stack>
       </Card>
     </div>
   );

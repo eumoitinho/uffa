@@ -1,11 +1,12 @@
 const User = require('../models/User');
-const path = require('path');
-const fs = require('fs');
 
 const userController = {
   async getById(req, res) {
     try {
       const { id } = req.params;
+      if (req.userId !== id) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
       const user = await User.findById(id);
 
       if (!user) {
@@ -23,6 +24,9 @@ const userController = {
     try {
       const { id } = req.params;
       const { name, email, password } = req.body;
+      if (req.userId !== id) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
 
       const user = await User.findById(id);
 
@@ -42,6 +46,9 @@ const userController = {
   async getPhoto(req, res) {
     try {
       const { id } = req.params;
+      if (req.userId !== id) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
       const user = await User.findById(id);
 
       if (!user) {
@@ -58,6 +65,9 @@ const userController = {
   async uploadPhoto(req, res) {
     try {
       const { id } = req.params;
+      if (req.userId !== id) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
 
       if (!req.file) {
         return res.status(400).json({ error: 'Nenhuma foto enviada' });

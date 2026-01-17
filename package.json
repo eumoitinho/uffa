@@ -12,6 +12,7 @@
     "@mantine/modals": "^6.0.16",
     "@mantine/notifications": "^6.0.16",
     "@mantine/nprogress": "^6.0.16",
+    "@react-oauth/google": "^0.12.1",
     "@reduxjs/toolkit": "^1.9.5",
     "@sandstreamdev/react-swipeable-list": "^1.0.2",
     "@tabler/icons-react": "^2.30.0",

@@ -2,19 +2,29 @@ const pool = require('../config/database');
 
 const createTables = async () => {
   try {
+    await pool.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+
     // Criar tabela de usuários
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        name VARCHAR(255) NOT NULL,
+        name VARCHAR(255),
         email VARCHAR(255) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
+        password VARCHAR(255),
+        google_id VARCHAR(255),
         photo TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
     console.log('Tabela users criada com sucesso');
+
+    await pool.query(`
+      ALTER TABLE users
+        ALTER COLUMN name DROP NOT NULL,
+        ALTER COLUMN password DROP NOT NULL,
+        ADD COLUMN IF NOT EXISTS google_id VARCHAR(255);
+    `);
 
     // Criar tabela de transações
     await pool.query(`
@@ -39,15 +49,17 @@ const createTables = async () => {
       CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
       CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
       CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
     `);
     console.log('Índices criados com sucesso');
 
     console.log('Migrations executadas com sucesso!');
-    process.exit(0);
+    await pool.end();
   } catch (error) {
     console.error('Erro ao executar migrations:', error);
-    process.exit(1);
+    await pool.end();
+    throw error;
   }
 };
 
-createTables();
+createTables().catch(console.error);

@@ -70,7 +70,7 @@ export const useFirebaseListener = (userId, setTransactions) => {
 
     fetchTransactions();
 
-    // Polling a cada 30 segundos (opcional - pode remover se preferir atualização manual)
+    // Polling a cada 30 segundos
     const interval = setInterval(fetchTransactions, 30000);
 
     return () => clearInterval(interval);

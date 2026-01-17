@@ -4,6 +4,9 @@ const transactionController = {
   async getAll(req, res) {
     try {
       const { userId } = req.params;
+      if (req.userId !== userId) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
       const transactions = await Transaction.findByUserId(userId);
       res.json(transactions);
     } catch (error) {
@@ -15,6 +18,9 @@ const transactionController = {
   async getById(req, res) {
     try {
       const { userId, transactionId } = req.params;
+      if (req.userId !== userId) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
       const transaction = await Transaction.findById(userId, transactionId);
 
       if (!transaction) {
@@ -32,6 +38,9 @@ const transactionController = {
     try {
       const { userId } = req.params;
       const { id, name, type, amount, date, category, reference, deleteSynced } = req.body;
+      if (req.userId !== userId) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
 
       if (!name || !type || !amount || !date) {
         return res.status(400).json({ error: 'Nome, tipo, valor e data são obrigatórios' });
@@ -59,6 +68,9 @@ const transactionController = {
     try {
       const { userId, transactionId } = req.params;
       const { name, type, amount, date, category, reference, deleteSynced } = req.body;
+      if (req.userId !== userId) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
 
       const existingTransaction = await Transaction.findById(userId, transactionId);
 
@@ -86,6 +98,9 @@ const transactionController = {
   async delete(req, res) {
     try {
       const { userId, transactionId } = req.params;
+      if (req.userId !== userId) {
+        return res.status(403).json({ error: 'Acesso negado' });
+      }
 
       const deleted = await Transaction.delete(userId, transactionId);
 

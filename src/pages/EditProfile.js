@@ -7,24 +7,22 @@ import { getUserById, updateUser, uploadUserPhoto } from '../services/apiService
 import { useDispatch } from 'react-redux';
 import { notifications } from '@mantine/notifications';
 import { HideLoading, ShowLoading } from '../redux/alertsSlice';
-import { FaPencilAlt, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaPencilAlt } from 'react-icons/fa';
 
 function EditProfile() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [userDataLoaded, setUserDataLoaded] = useState(false);
 
   const editform = useForm({
     initialValues: {
       name: '',
       email: '',
-      password: '',
     },
     validate: {
       name: (value) => (value.length < 2 ? 'Seu nome precisa ter mais de duas letras' : null),
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Email inválido'),
+      email: (value) => (!value || /^\S+@\S+$/.test(value) ? null : 'Email inválido'),
     },
   });
   const loggedUser = JSON.parse(localStorage.getItem('user'));
@@ -35,11 +33,9 @@ function EditProfile() {
         const userDataFromApi = await getUserById(loggedUser.id);
         const decryptedUserData = {
           ...userDataFromApi,
-          password: '', // Senha não vem do backend por segurança
         };
         setUserData(decryptedUserData);
         editform.setValues(decryptedUserData);
-        setUserDataLoaded(true);
       } catch (error) {
         console.error('Erro ao buscar dados do usuário:', error);
       }
@@ -49,15 +45,12 @@ function EditProfile() {
   }, []);
 
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedPhotoFile(file);
-    }
-  };
-
   const onSubmit = async (event) => {
     event.preventDefault();
+    editform.validate();
+    if (!editform.isValid()) {
+      return;
+    }
 
     try {
       dispatch(ShowLoading());
@@ -75,17 +68,8 @@ function EditProfile() {
 
       // Preparar dados para atualização
       const dataToUpdate = {};
-
-      if (editform.values) {
-        Object.keys(editform.values).forEach((key) => {
-          if (editform.values[key] !== loggedUser[key] && key !== 'photo') {
-            if (key === 'password' && editform.values[key]) {
-              dataToUpdate[key] = editform.values[key];
-            } else if (key !== 'password') {
-              dataToUpdate[key] = editform.values[key];
-            }
-          }
-        });
+      if (editform.values.name && editform.values.name !== userData?.name) {
+        dataToUpdate.name = editform.values.name;
       }
 
       // Atualizar usuário via API
@@ -99,6 +83,7 @@ function EditProfile() {
         id: userId,
         name: updatedUserData.name,
         email: updatedUserData.email,
+        photo: updatedUserData.photo,
       };
       localStorage.setItem("user", JSON.stringify(dataToPutInLocalStorage));
 
@@ -124,16 +109,10 @@ function EditProfile() {
 
 
   const [sidebar, setSidebar] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [photoChanged, setPhotoChanged] = useState(false);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
   const [editMode, setEditMode] = useState({
     name: false,
-    email: false,
-    password: false,
   });
 
   const toggleEditMode = (field) => {
@@ -186,33 +165,17 @@ function EditProfile() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </div>
-              {!editMode.photo && (
-                <Button
-                  style={{ position: 'absolute', top: '90%', left: '90%', transform: 'translate(-50%, -50%)', zIndex: 1 }}
-                  size="xs"
-                  onClick={handleEditPhotoClick}
-                  title="Editar foto"
-                  variant="transparent"
-                >
-                  <FaPencilAlt />
-                </Button>
-              )}
+              <Button
+                style={{ position: 'absolute', top: '90%', left: '90%', transform: 'translate(-50%, -50%)', zIndex: 1 }}
+                size="xs"
+                onClick={handleEditPhotoClick}
+                title="Editar foto"
+                variant="transparent"
+              >
+                <FaPencilAlt />
+              </Button>
             </div>
           </div>
-          {editMode.photo && (
-            <>
-              <div style={{ textAlign: 'center' }}>
-                <label>
-                  Foto:
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setSelectedPhotoFile(e.target.files[0])}
-                  />
-                </label>
-              </div>
-            </>
-          )}
           <Divider my="xs" label="Editar perfil" labelPosition="center" />
           <form action="" onSubmit={onSubmit}>
             <Stack>
@@ -242,51 +205,10 @@ function EditProfile() {
                   placeholder="Digite seu e-mail"
                   name="email"
                   {...editform.getInputProps('email')}
-                  disabled={!editMode.email}
+                  disabled
                 />
-                {!editMode.email && (
-                  <Button
-                    style={{ position: 'absolute', top: 25, right: 8 }}
-                    size="xs"
-                    onClick={() => toggleEditMode('email')}
-                    title="Cancelar edição"
-                    variant="transparent"
-                  >
-                    <FaPencilAlt />
-                  </Button>
-                )}
               </div>
-              <div style={{ position: 'relative' }}>
-                <TextInput
-                  label="Senha"
-                  placeholder="Digite sua nova senha (opcional)"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  {...editform.getInputProps('password')}
-                  disabled={!editMode.password}
-                />
-                <Button
-                  style={{ position: 'absolute', top: 25, right: 8 }}
-                  size="xs"
-                  onClick={togglePasswordVisibility}
-                  title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                  variant="transparent"
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </Button>
-                {!editMode.password && (
-                  <Button
-                    style={{ position: 'absolute', top: 25, right: 40 }}
-                    size="xs"
-                    onClick={() => toggleEditMode('password')}
-                    title="Cancelar edição"
-                    variant="transparent"
-                  >
-                    <FaPencilAlt />
-                  </Button>
-                )}
-              </div>
-              {(editMode.name || editMode.email || editMode.password || photoChanged ) && (
+              {(editMode.name || photoChanged ) && (
                 <>
                   <Button type="submit" variant="outline" color="teal">
                     Salvar
@@ -294,9 +216,9 @@ function EditProfile() {
                   <Button
                     onClick={() => {
                       editform.setValues(userData);
-                      toggleEditMode('name');
-                      toggleEditMode('email');
-                      toggleEditMode('password');
+                      setEditMode({ name: false });
+                      setSelectedPhotoFile(null);
+                      setPhotoChanged(false);
                     }}
                     variant="outline"
                     color="teal"

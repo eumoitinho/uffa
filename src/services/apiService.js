@@ -10,15 +10,18 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // ==================== AUTENTICAÇÃO ====================
 
-export const loginUser = async (email, password) => {
-  const response = await api.post('/auth/login', { email, password });
-  return response.data;
-};
-
-export const registerUser = async (userData) => {
-  const response = await api.post('/auth/register', userData);
+export const loginWithGoogle = async (credential) => {
+  const response = await api.post('/auth/google', { credential });
   return response.data;
 };
 

@@ -2,6 +2,11 @@ const jwt = require('jsonwebtoken');
 
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
+  const jwtSecret = process.env.JWT_SECRET;
+
+  if (!jwtSecret) {
+    return res.status(500).json({ error: 'JWT_SECRET não configurado' });
+  }
 
   if (!authHeader) {
     return res.status(401).json({ error: 'Token não fornecido' });
@@ -20,7 +25,7 @@ const authMiddleware = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'uffa_secret_key');
+    const decoded = jwt.verify(token, jwtSecret);
     req.userId = decoded.id;
     return next();
   } catch (error) {

@@ -7,16 +7,25 @@ import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications'
 import { Provider } from 'react-redux';
 import store from './redux/store';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 
 
 
+const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
+const app = googleClientId ? (
+  <GoogleOAuthProvider clientId={googleClientId}>
+    <App />
+  </GoogleOAuthProvider>
+) : (
+  <App />
+);
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <MantineProvider withGlobalStyles withNormalizeCSS>
     <Notifications position="bottom-right" zIndex={2077} />
     <Provider store={store}>
-      <App />
+      {app}
     </Provider>
   </MantineProvider>
 );

@@ -1,30 +1,91 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const authController = {
-  async login(req, res) {
+  async googleLogin(req, res) {
     try {
-      const { email, password } = req.body;
+      const { credential } = req.body;
+      const jwtSecret = process.env.JWT_SECRET;
 
-      if (!email || !password) {
-        return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+      if (!jwtSecret) {
+        return res.status(500).json({ error: 'JWT_SECRET não configurado' });
       }
 
-      const user = await User.findByEmail(email);
+      if (!process.env.GOOGLE_CLIENT_ID) {
+        return res.status(500).json({ error: 'GOOGLE_CLIENT_ID não configurado' });
+      }
+
+      if (!credential) {
+        return res.status(400).json({ error: 'Credencial do Google é obrigatória' });
+      }
+
+      let payload;
+      try {
+        const ticket = await googleClient.verifyIdToken({
+          idToken: credential,
+          audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        payload = ticket.getPayload();
+      } catch (error) {
+        return res.status(401).json({ error: 'Token do Google inválido' });
+      }
+
+      const googleId = payload?.sub;
+      const email = payload?.email;
+      const name = payload?.name;
+      const photo = payload?.picture;
+      const emailVerified = payload?.email_verified;
+
+      if (!googleId || !email || !emailVerified) {
+        return res.status(400).json({ error: 'Conta Google inválida ou não verificada' });
+      }
+
+      let user = await User.findByGoogleId(googleId);
+      let isNewUser = false;
 
       if (!user) {
-        return res.status(404).json({ error: 'Usuário não encontrado' });
+        const existingByEmail = await User.findByEmail(email);
+        if (existingByEmail) {
+          const updates = { googleId };
+          if (!existingByEmail.name && name) {
+            updates.name = name;
+          }
+          if (!existingByEmail.photo && photo) {
+            updates.photo = photo;
+          }
+          user = await User.update(existingByEmail.id, updates);
+        } else {
+          isNewUser = true;
+          user = await User.createFromGoogle({
+            name,
+            email,
+            googleId,
+            photo,
+          });
+        }
+      } else {
+        const updates = {};
+        if (!user.name && name) {
+          updates.name = name;
+        }
+        if (!user.photo && photo) {
+          updates.photo = photo;
+        }
+        if (!user.email && email) {
+          updates.email = email;
+        }
+        if (Object.keys(updates).length > 0) {
+          user = await User.update(user.id, updates);
+        }
       }
 
-      const isValidPassword = await User.comparePassword(password, user.password);
-
-      if (!isValidPassword) {
-        return res.status(401).json({ error: 'Credenciais inválidas' });
-      }
-
+      const needsOnboarding = !user?.name || user.name.trim().length < 2;
       const token = jwt.sign(
         { id: user.id, email: user.email },
-        process.env.JWT_SECRET || 'uffa_secret_key',
+        jwtSecret,
         { expiresIn: '7d' }
       );
 
@@ -33,52 +94,17 @@ const authController = {
           id: user.id,
           name: user.name,
           email: user.email,
-          photo: user.photo
+          photo: user.photo,
         },
-        token
+        token,
+        needsOnboarding,
+        isNewUser,
       });
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.error('Erro no login com Google:', error);
       res.status(500).json({ error: 'Erro interno do servidor' });
     }
   },
-
-  async register(req, res) {
-    try {
-      const { name, email, password } = req.body;
-
-      if (!name || !email || !password) {
-        return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
-      }
-
-      const existingUser = await User.findByEmail(email);
-
-      if (existingUser) {
-        return res.status(409).json({ error: 'Usuário já cadastrado' });
-      }
-
-      const user = await User.create({ name, email, password });
-
-      const token = jwt.sign(
-        { id: user.id, email: user.email },
-        process.env.JWT_SECRET || 'uffa_secret_key',
-        { expiresIn: '7d' }
-      );
-
-      res.status(201).json({
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          photo: user.photo
-        },
-        token
-      });
-    } catch (error) {
-      console.error('Erro no registro:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-  }
 };
 
 module.exports = authController;

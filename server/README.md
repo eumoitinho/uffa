@@ -20,6 +20,7 @@ npm install
 cp .env.example .env
 # Edite o arquivo .env com suas configurações
 ```
+Inclua `GOOGLE_CLIENT_ID` e `JWT_SECRET` para autenticação.
 
 3. Crie o banco de dados PostgreSQL:
 ```sql
@@ -46,8 +47,16 @@ npm start
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| POST | `/api/auth/login` | Login de usuário |
-| POST | `/api/auth/register` | Registro de usuário |
+| POST | `/api/auth/google` | Login/registro via Google |
+
+Body esperado:
+```json
+{ "credential": "<google_id_token>" }
+```
+
+### Autorização
+
+As rotas sob `/api/users` exigem `Authorization: Bearer <token>`, retornado no login via Google.
 
 ### Usuários
 
@@ -74,7 +83,8 @@ npm start
 - `id` (UUID) - Chave primária
 - `name` (VARCHAR) - Nome do usuário
 - `email` (VARCHAR) - Email único
-- `password` (VARCHAR) - Senha hash
+- `password` (VARCHAR) - Senha hash (nullable)
+- `google_id` (VARCHAR) - ID da conta Google
 - `photo` (TEXT) - URL da foto
 - `created_at` (TIMESTAMP)
 - `updated_at` (TIMESTAMP)
