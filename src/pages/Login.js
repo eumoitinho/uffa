@@ -1,6 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, Stack, Button, Center, Text, Image } from '@mantine/core';
+import { useNavigate, Link } from 'react-router-dom';
+import { Card, Stack, Button, Center, Text, Image, Anchor } from '@mantine/core';
 import { loginWithGoogle } from '../services/apiService';
 import { notifications } from '@mantine/notifications';
 import { useDispatch } from 'react-redux';
@@ -109,6 +109,13 @@ function Login() {
             </Button>
           )}
         </Stack>
+        <Center mt="lg">
+          <Text size="xs" color="dimmed">
+            <Anchor component={Link} to="/privacy" color="dimmed">Política de Privacidade</Anchor>
+            {' | '}
+            <Anchor component={Link} to="/terms" color="dimmed">Termos de Uso</Anchor>
+          </Text>
+        </Center>
       </Card>
     </div>
   );
