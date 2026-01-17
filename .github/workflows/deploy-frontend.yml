@@ -34,15 +34,10 @@ jobs:
           REACT_APP_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           CI: false
 
-      - name: Copy staticwebapp config to build
+      - name: Copy config to build
         run: cp public/staticwebapp.config.json build/
 
-      - name: Deploy to Azure Static Web Apps
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: "upload"
-          skip_app_build: true
-          app_location: "build"
-          output_location: ""
+      - name: Install SWA CLI and Deploy
+        run: |
+          npm install -g @azure/static-web-apps-cli
+          cd build && swa deploy . --deployment-token "${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}" --env production
