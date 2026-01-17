@@ -20,7 +20,7 @@ npm install
 cp .env.example .env
 # Edite o arquivo .env com suas configurações
 ```
-Inclua `GOOGLE_CLIENT_ID` e `JWT_SECRET` para autenticação.
+Inclua `GOOGLE_CLIENT_ID` e `JWT_SECRET` para autenticação. Para Open Finance, configure também as variáveis `BELVO_*` e `FRONTEND_URL`.
 
 3. Crie o banco de dados PostgreSQL:
 ```sql
@@ -77,6 +77,16 @@ As rotas sob `/api/users` exigem `Authorization: Bearer <token>`, retornado no l
 | PUT | `/api/users/:userId/transactions/:id` | Atualizar transação |
 | DELETE | `/api/users/:userId/transactions/:id` | Excluir transação |
 
+### Open Finance (Belvo)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/api/openfinance/widget-token` | Gerar token do Hosted Widget |
+| POST | `/api/openfinance/links` | Registrar link criado pelo widget |
+| GET | `/api/openfinance/links` | Listar links do usuário |
+| POST | `/api/openfinance/sync` | Sincronizar transações |
+| POST | `/api/openfinance/webhook` | Webhook de eventos Belvo |
+
 ## Estrutura do Banco de Dados
 
 ### Tabela `users`
@@ -98,6 +108,22 @@ As rotas sob `/api/users` exigem `Authorization: Bearer <token>`, retornado no l
 - `date` (DATE) - Data
 - `category` (VARCHAR) - Categoria
 - `reference` (TEXT) - Descrição
+- `source` (VARCHAR) - Origem (manual/belvo)
+- `external_id` (VARCHAR) - ID externo do provedor
+- `link_id` (VARCHAR) - Link Belvo relacionado
+- `account_id` (VARCHAR) - Conta Belvo relacionada
+- `institution` (VARCHAR) - Instituição Belvo
 - `delete_synced` (BOOLEAN) - Flag de sincronização
+- `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
+
+### Tabela `openfinance_links`
+- `id` (UUID) - Chave primária
+- `user_id` (UUID) - FK para users
+- `link_id` (VARCHAR) - ID do link Belvo
+- `institution` (VARCHAR) - Instituição conectada
+- `access_mode` (VARCHAR) - Tipo de link (recurrent/single)
+- `status` (VARCHAR) - Status do link
+- `last_synced_at` (TIMESTAMP) - Última sincronização
 - `created_at` (TIMESTAMP)
 - `updated_at` (TIMESTAMP)

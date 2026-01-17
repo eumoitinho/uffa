@@ -81,8 +81,7 @@ const createTables = async () => {
       CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
       CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
       CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_external_source
-        ON transactions(user_id, source, external_id)
-        WHERE external_id IS NOT NULL;
+        ON transactions(user_id, source, external_id);
       CREATE INDEX IF NOT EXISTS idx_openfinance_links_user_id ON openfinance_links(user_id);
     `);
     console.log('Índices criados com sucesso');

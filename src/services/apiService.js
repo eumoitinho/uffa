@@ -88,4 +88,26 @@ export const checkTransactionExists = async (userId, transactionId) => {
   }
 };
 
+// ==================== OPEN FINANCE ====================
+
+export const getOpenFinanceWidgetToken = async ({ name, cpf, cnpj }) => {
+  const response = await api.post('/openfinance/widget-token', { name, cpf, cnpj });
+  return response.data;
+};
+
+export const registerOpenFinanceLink = async (link, institution) => {
+  const response = await api.post('/openfinance/links', { link, institution });
+  return response.data;
+};
+
+export const getOpenFinanceLinks = async () => {
+  const response = await api.get('/openfinance/links');
+  return response.data;
+};
+
+export const syncOpenFinance = async ({ linkId, dateFrom, dateTo }) => {
+  const response = await api.post('/openfinance/sync', { linkId, dateFrom, dateTo });
+  return response.data;
+};
+
 export default api;

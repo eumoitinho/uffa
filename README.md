@@ -70,12 +70,24 @@ Backend (`server/.env`):
 - `JWT_SECRET` - JWT signing secret
 - `GOOGLE_CLIENT_ID` - Google OAuth client ID (must match frontend)
 - `UPLOAD_DIR` - upload folder (default: `./uploads`)
+- `BELVO_BASE_URL` - Belvo API base URL (use sandbox for testing)
+- `BELVO_SECRET_ID` - Belvo secret ID
+- `BELVO_SECRET_PASSWORD` - Belvo secret password
+- `BELVO_WEBHOOK_SECRET` - Token para autenticação do webhook (opcional)
+- `FRONTEND_URL` - URL base do frontend (para callbacks do widget)
 
 ## Google OAuth setup
 
 1. Create an OAuth client ID in Google Cloud Console.
 2. Configure authorized JavaScript origins for your frontend.
 3. Set `REACT_APP_GOOGLE_CLIENT_ID` in the frontend `.env` and `GOOGLE_CLIENT_ID` in `server/.env`.
+
+## Belvo Open Finance setup
+
+1. Configure as credenciais `BELVO_SECRET_ID` e `BELVO_SECRET_PASSWORD`.
+2. Defina `BELVO_BASE_URL` para `https://sandbox.belvo.com` em testes.
+3. Crie um webhook na Belvo apontando para `/api/openfinance/webhook`.
+4. Garanta que `FRONTEND_URL` esteja correto para os callbacks do widget.
 
 ## Scripts
 
@@ -101,6 +113,10 @@ See `server/README.md` for endpoint list and database schema.
 - `/terms` - Termos de Uso
 - `/lgpd` - LGPD
 - `/openfinance` - Open Finance
+
+## Open Finance
+
+- `/openfinance/connect` - Conectar contas via Belvo (requer login)
 
 ## Changelog
 

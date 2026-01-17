@@ -13,6 +13,7 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Lgpd from './pages/Lgpd';
 import OpenFinance from './pages/OpenFinance';
+import OpenFinanceConnect from './pages/OpenFinanceConnect';
 
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route path='/terms' element= {<Terms />} />
           <Route path='/lgpd' element= {<Lgpd />} />
           <Route path='/openfinance' element= {<OpenFinance />} />
+          <Route path='/openfinance/connect' element= {<ProtectedRoute><OpenFinanceConnect /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </div>

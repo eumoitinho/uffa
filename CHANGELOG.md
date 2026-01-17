@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Onboarding flow to confirm user name and optional profile photo.
 - User table support for Google account IDs and nullable passwords.
 - Legal pages: Privacy, Terms, LGPD, and Open Finance.
+- Belvo Open Finance integration with widget token, links, and transaction sync.
 
 ### Changed
 - User and transaction APIs now require JWT bearer tokens.

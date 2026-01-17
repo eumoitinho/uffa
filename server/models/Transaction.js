@@ -158,6 +158,58 @@ class Transaction {
     );
     return result.rowCount > 0;
   }
+
+  static async upsertExternal(userId, transactions) {
+    if (!transactions || transactions.length === 0) {
+      return 0;
+    }
+
+    const values = [];
+    const placeholders = transactions.map((transaction) => {
+      const placeholder = [
+        userId,
+        transaction.name,
+        transaction.type,
+        transaction.amount,
+        transaction.date,
+        transaction.category || null,
+        transaction.reference || null,
+        transaction.source || 'belvo',
+        transaction.externalId,
+        transaction.linkId || null,
+        transaction.accountId || null,
+        transaction.institution || null,
+        transaction.deleteSynced !== undefined ? transaction.deleteSynced : true,
+      ];
+      values.push(...placeholder);
+      const startIndex = values.length - placeholder.length + 1;
+      const indexes = placeholder.map((_, idx) => `$${startIndex + idx}`);
+      return `(${indexes.join(', ')})`;
+    });
+
+    const result = await pool.query(
+      `INSERT INTO transactions (
+        user_id,
+        name,
+        type,
+        amount,
+        date,
+        category,
+        reference,
+        source,
+        external_id,
+        link_id,
+        account_id,
+        institution,
+        delete_synced
+      )
+      VALUES ${placeholders.join(', ')}
+      ON CONFLICT (user_id, source, external_id) DO NOTHING`,
+      values
+    );
+
+    return result.rowCount;
+  }
 }
 
 module.exports = Transaction;

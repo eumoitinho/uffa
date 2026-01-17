@@ -10,7 +10,8 @@ import {
   FaShieldAlt,
   FaFileContract,
   FaBalanceScale,
-  FaChartLine
+  FaChartLine,
+  FaLink
 } from 'react-icons/fa'
 
 import SidebarItem from '../sidebaritem/SidebarItem.jsx'
@@ -51,6 +52,7 @@ const Sidebar = ({ active }) => {
         <SidebarItem Icon={FaHome} Text="Home" to="/"/>
         <SidebarItem Icon={FaBook} Text="Educação" to="/Education"/>
         <SidebarItem Icon={FaRegNewspaper} Text="Notícias" to="/NewsIndex"/>
+        <SidebarItem Icon={FaLink} Text="Conectar Open Finance" to="/openfinance/connect"/>
         <SidebarItem Icon={FaShieldAlt} Text="Privacidade" to="/privacy"/>
         <SidebarItem Icon={FaFileContract} Text="Termos" to="/terms"/>
         <SidebarItem Icon={FaBalanceScale} Text="LGPD" to="/lgpd"/>
