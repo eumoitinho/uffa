@@ -15,6 +15,8 @@ const SidebarItem = ({ Icon, Text, to, isLogout }) => {
       dispatch(ShowLoading());
       setTimeout(() => {
         localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('needsOnboarding');
         dispatch(HideLoading());
         navigate('/login');
       }, 300);

@@ -6,16 +6,20 @@ import {
   FaHome, 
   FaSignOutAlt,
   FaRegNewspaper,
-  FaBook
+  FaBook,
+  FaShieldAlt,
+  FaFileContract,
+  FaBalanceScale,
+  FaChartLine
 } from 'react-icons/fa'
 
 import SidebarItem from '../sidebaritem/SidebarItem.jsx'
 import SidebarProfile from '../sidebarprofile/SidebarProfile';
 import { getUserNameFromFirebase, getUserProfilePhoto } from '../../services/firebaseService';
-const user = JSON.parse(localStorage.getItem("user"));
 
 
 const Sidebar = ({ active }) => {
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const closeSidebar = () => {
     active(false)
@@ -26,6 +30,9 @@ const Sidebar = ({ active }) => {
   useEffect(() => {
     // Obtenha o URL da foto do perfil do usuário ao montar o componente
     const fetchUserProfile = async () => {
+      if (!user?.id) {
+        return;
+      }
       const photoUrl = await getUserProfilePhoto(user.id);
       const userName = await getUserNameFromFirebase(user.id);
       setProfilePhotoUrl(photoUrl);
@@ -44,6 +51,10 @@ const Sidebar = ({ active }) => {
         <SidebarItem Icon={FaHome} Text="Home" to="/"/>
         <SidebarItem Icon={FaBook} Text="Educação" to="/Education"/>
         <SidebarItem Icon={FaRegNewspaper} Text="Notícias" to="/NewsIndex"/>
+        <SidebarItem Icon={FaShieldAlt} Text="Privacidade" to="/privacy"/>
+        <SidebarItem Icon={FaFileContract} Text="Termos" to="/terms"/>
+        <SidebarItem Icon={FaBalanceScale} Text="LGPD" to="/lgpd"/>
+        <SidebarItem Icon={FaChartLine} Text="Open Finance" to="/openfinance"/>
         <SidebarItem Icon={FaSignOutAlt} Text="Logout" isLogout={true} />
       </Content>
     </Container>

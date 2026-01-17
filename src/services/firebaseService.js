@@ -1,66 +1,57 @@
-import { collection, doc, getDocs, setDoc, deleteDoc, query, where, onSnapshot, orderBy, getDoc } from 'firebase/firestore';
-
-import { fireDb } from '../firebaseConfig';
 import { useEffect, useState } from 'react';
+import {
+  getTransactions,
+  addTransaction,
+  updateTransaction,
+  deleteTransaction,
+  checkTransactionExists,
+  getUserById,
+  getUserProfilePhoto as apiGetUserProfilePhoto,
+} from './apiService';
 import { checkTransactionExistsInIndexedDB, removeFromIndexedDB, storeTransactionFromFirebaseLocally } from './indexedDbService';
 
-
 export const getTransactionsFromFirebase = async (userId) => {
-  const querySnapshot = await getDocs(collection(fireDb, `users/${userId}/transactions`));
-  return querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  const transactions = await getTransactions(userId);
+  return transactions;
 };
 
 export const getDataUserFromFirebase = async (userId) => {
-  const querySnapshot = await getDocs(collection(fireDb, 'users')); // Correção aqui
-  return querySnapshot.docs
-    .filter((doc) => doc.id === userId)
-    .map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+  const user = await getUserById(userId);
+  return [user]; // Retorna como array para manter compatibilidade
 };
 
-
 export const addTransactionToFirebase = async (userId, transaction) => {
-  await setDoc(doc(fireDb, `users/${userId}/transactions`, transaction.id), transaction);
+  await addTransaction(userId, transaction);
 };
 
 export const updateTransactionInFirebase = async (userId, transaction) => {
-  await setDoc(doc(fireDb, `users/${userId}/transactions`, transaction.id), transaction);
+  await updateTransaction(userId, transaction);
 };
 
 export const deleteTransactionFromFirebase = async (userId, transactionId) => {
-  await deleteDoc(doc(fireDb, `users/${userId}/transactions`, transactionId));
+  await deleteTransaction(userId, transactionId);
 };
 
 export const checkTransactionExistsInFirebase = async (userId, transactionId) => {
   if (!transactionId) {
-    return false; // A transação não possui um ID definido
+    return false;
   }
-
-  const querySnapshot = await getDocs(
-    query(collection(fireDb, `users/${userId}/transactions`), where('id', '==', transactionId))
-  );
-
-  return !querySnapshot.empty;
+  return await checkTransactionExists(userId, transactionId);
 };
 
 export const useFirebaseListener = (userId, setTransactions) => {
   const [dataChanged, setDataChanged] = useState(false);
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      query(collection(fireDb, `users/${userId}/transactions`), orderBy("date", "desc")),
-      (snapshot) => {
-        const updatedTransactions = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
 
-        setTransactions(updatedTransactions);
-        updatedTransactions.forEach(async (transaction) => {
+  useEffect(() => {
+    // Polling para simular real-time (já que PostgreSQL não tem listeners nativos)
+    // Você pode substituir por WebSockets no backend para real-time
+    const fetchTransactions = async () => {
+      try {
+        const transactions = await getTransactions(userId);
+        setTransactions(transactions);
+
+        // Sincronizar com IndexedDB
+        transactions.forEach(async (transaction) => {
           const transactionExists = await checkTransactionExistsInIndexedDB(transaction.id);
           if (transaction.deleteSynced === false) {
             if (transactionExists) {
@@ -72,11 +63,19 @@ export const useFirebaseListener = (userId, setTransactions) => {
             }
           }
         });
+      } catch (error) {
+        console.error('Erro ao buscar transações:', error);
       }
-    );
+    };
 
-    return () => unsubscribe();
+    fetchTransactions();
+
+    // Polling a cada 30 segundos
+    const interval = setInterval(fetchTransactions, 30000);
+
+    return () => clearInterval(interval);
   }, [userId, setTransactions]);
+
   useEffect(() => {
     if (dataChanged) {
       setDataChanged(false);
@@ -87,23 +86,8 @@ export const useFirebaseListener = (userId, setTransactions) => {
 // Função para buscar a foto do perfil do usuário
 export const getUserProfilePhoto = async (userId) => {
   try {
-    // Obtém o documento do usuário no Firestore
-    const userDocRef = doc(fireDb, 'users', userId);
-    const userDocSnap = await getDoc(userDocRef);
-
-    if (userDocSnap.exists()) {
-      // Se o usuário existir, verifique se ele possui um URL de foto de perfil
-      const userData = userDocSnap.data();
-      if (userData && userData.photo) {
-        return userData.photo;
-      } else {
-        // Caso não tenha uma foto de perfil definida, retorne null
-        return null;
-      }
-    } else {
-      // Se o documento do usuário não existir, retorne null
-      return null;
-    }
+    const photoUrl = await apiGetUserProfilePhoto(userId);
+    return photoUrl || null;
   } catch (error) {
     console.error('Erro ao buscar a foto do perfil do usuário:', error);
     return null;
@@ -112,23 +96,8 @@ export const getUserProfilePhoto = async (userId) => {
 
 export const getUserNameFromFirebase = async (userId) => {
   try {
-    // Obtém o documento do usuário no Firestore
-    const userDocRef = doc(fireDb, 'users', userId);
-    const userDocSnap = await getDoc(userDocRef);
-
-    if (userDocSnap.exists()) {
-      // Se o usuário existir, verifique se ele possui um nome
-      const userData = userDocSnap.data();
-      if (userData && userData.name) {
-        return userData.name;
-      } else {
-        // Caso não tenha um nome definido, retorne null
-        return null;
-      }
-    } else {
-      // Se o documento do usuário não existir, retorne null
-      return null;
-    }
+    const user = await getUserById(userId);
+    return user?.name || null;
   } catch (error) {
     console.error('Erro ao buscar o nome do usuário:', error);
     return null;

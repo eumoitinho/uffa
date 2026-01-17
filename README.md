@@ -1,70 +1,107 @@
-# Getting Started with Create React App
+# UFFA
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+UFFA is a personal finance web app with offline-friendly transactions, charts, and education content. The project is split into a React frontend and a Node/Express + PostgreSQL backend.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- Google sign-in only (account created on first login)
+- Onboarding para confirmar nome e foto de perfil
+- Transaction CRUD with categories and filters
+- Balance, budget, and charts
+- News and education pages
+- Offline storage via IndexedDB and sync on reconnect
+- Profile photo upload
 
-### `npm start`
+## Tech stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Frontend: React (CRA), Mantine UI, Redux Toolkit, Axios
+- Backend: Node.js, Express, PostgreSQL, Multer, JWT
+- Storage: IndexedDB for offline data
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Project structure
 
-### `npm test`
+- `src/` frontend code
+- `public/` static assets
+- `server/` backend API and migrations
+- `build/` production build output
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Getting started
 
-### `npm run build`
+### Prerequisites
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Node.js 18+
+- PostgreSQL 14+
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Backend setup
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Install dependencies:
+   `cd server && npm install`
+2. Create `.env` in `server/` (see Environment variables).
+3. Create the database and run migrations:
+   `npm run migrate`
+4. Start the API:
+   `npm run dev`
 
-### `npm run eject`
+### Frontend setup
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. Install dependencies:
+   `npm install`
+2. Create `.env` in the project root if needed.
+3. Start the app:
+   `npm start`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Note: `npm start` uses HTTPS by default and expects `cert.pem` and `cert-key.pem` in the project root. Adjust the `start` script if you do not need HTTPS.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Environment variables
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Frontend (`.env`):
 
-## Learn More
+- `REACT_APP_API_URL` - API base URL (default: `http://localhost:3001/api`)
+- `REACT_APP_GOOGLE_CLIENT_ID` - Google OAuth client ID
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Backend (`server/.env`):
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- `PORT` - API port (default: `3001`)
+- `DB_HOST` - database host
+- `DB_PORT` - database port (default: `5432`)
+- `DB_NAME` - database name (default: `uffa_db`)
+- `DB_USER` - database user
+- `DB_PASSWORD` - database password
+- `JWT_SECRET` - JWT signing secret
+- `GOOGLE_CLIENT_ID` - Google OAuth client ID (must match frontend)
+- `UPLOAD_DIR` - upload folder (default: `./uploads`)
 
-### Code Splitting
+## Google OAuth setup
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+1. Create an OAuth client ID in Google Cloud Console.
+2. Configure authorized JavaScript origins for your frontend.
+3. Set `REACT_APP_GOOGLE_CLIENT_ID` in the frontend `.env` and `GOOGLE_CLIENT_ID` in `server/.env`.
 
-### Analyzing the Bundle Size
+## Scripts
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Root:
 
-### Making a Progressive Web App
+- `npm start` - run frontend
+- `npm run build` - build frontend
+- `npm test` - run frontend tests
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Server (`server/`):
 
-### Advanced Configuration
+- `npm run dev` - run API with nodemon
+- `npm start` - run API
+- `npm run migrate` - create tables and indexes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## API
 
-### Deployment
+See `server/README.md` for endpoint list and database schema.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Legal pages
 
-### `npm run build` fails to minify
+- `/privacy` - Política de Privacidade
+- `/terms` - Termos de Uso
+- `/lgpd` - LGPD
+- `/openfinance` - Open Finance
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Changelog
+
+See `CHANGELOG.md`.
