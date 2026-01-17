@@ -40,9 +40,36 @@ const runMigrations = async () => {
         date DATE NOT NULL,
         category VARCHAR(100),
         reference TEXT,
+        source VARCHAR(50) DEFAULT 'manual',
+        external_id VARCHAR(255),
+        link_id VARCHAR(255),
+        account_id VARCHAR(255),
+        institution VARCHAR(255),
         delete_synced BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await pool.query(`
+      ALTER TABLE transactions
+        ADD COLUMN IF NOT EXISTS source VARCHAR(50) DEFAULT 'manual',
+        ADD COLUMN IF NOT EXISTS external_id VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS link_id VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS account_id VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS institution VARCHAR(255);
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS openfinance_links (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        link_id VARCHAR(255) NOT NULL,
+        institution VARCHAR(255),
+        access_mode VARCHAR(50) DEFAULT 'recurrent',
+        status VARCHAR(50) DEFAULT 'active',
+        last_synced_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (user_id, link_id)
       );
     `);
     await pool.query(`
@@ -50,6 +77,10 @@ const runMigrations = async () => {
       CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
       CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
       CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_external_source
+        ON transactions(user_id, source, external_id)
+        WHERE external_id IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS idx_openfinance_links_user_id ON openfinance_links(user_id);
     `);
     console.log('Migrations executadas com sucesso!');
   } catch (error) {
