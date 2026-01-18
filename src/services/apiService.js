@@ -20,8 +20,8 @@ api.interceptors.request.use((config) => {
 
 // ==================== AUTENTICAÇÃO ====================
 
-export const loginWithGoogle = async (credential) => {
-  const response = await api.post('/auth/google', { credential });
+export const loginWithGoogle = async (token, tokenType = 'credential') => {
+  const response = await api.post('/auth/google', { token, tokenType });
   return response.data;
 };
 

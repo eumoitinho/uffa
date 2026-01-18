@@ -10,7 +10,9 @@
     }
   ],
   "globalHeaders": {
-    "Cache-Control": "no-cache"
+    "Cache-Control": "no-cache",
+    "Cross-Origin-Opener-Policy": "unsafe-none",
+    "Cross-Origin-Embedder-Policy": "unsafe-none"
   },
   "mimeTypes": {
     ".json": "application/json"
