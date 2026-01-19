@@ -199,7 +199,7 @@ function TransactionForm({
   return (
     <div>
       <form action="" onSubmit={onSubmit}>
-        <Stack>
+        <Stack gap="md">
           <TextInput
             name="name"
             label="Nome"

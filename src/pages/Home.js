@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../components/header/Header';
-import { Badge, Box, Card, Modal } from '@mantine/core';
+import { Badge, Box, Card, Modal, Text, Group } from '@mantine/core';
 import TransactionForm from '../components/transactions/TransactionForm';
 import { Button } from '@mantine/core';
 import { getTransactions } from '../services/apiService';
@@ -14,6 +14,7 @@ import { useFirebaseListener } from '../services/firebaseService';
 import PieChart from '../components/charts/PieChart';
 import Filters from '../components/filters/Filters';
 import moment from 'moment';
+import { IconPlus } from '@tabler/icons-react';
 
 
 function Home() {
@@ -155,47 +156,78 @@ function Home() {
   };
 
   return (
-    <Box>
-          <Header sidebar={sidebar} setSidebar={setSidebar}/>
-      <Card>
-          {!isMobile && (
-            <div className='flex justify-end'>
-              <Button color="teal" onClick={handleAddTransaction}>
-                Adicione Transação
+    <Box style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+      <Header sidebar={sidebar} setSidebar={setSidebar}/>
+
+      <Box p="md" maw={1200} mx="auto">
+        {/* Balance Card */}
+        <Card mb="md" radius="lg" padding="xl" withBorder>
+          <Balance transactions={filteredTransactions} />
+        </Card>
+
+        {/* Budget Display */}
+        <Card mb="md" radius="lg" withBorder>
+          <DisplayBudget transactions={filteredTransactions} />
+        </Card>
+
+        {/* Actions & Filters */}
+        <Card mb="md" radius="lg" withBorder>
+          <Group justify="space-between" mb="md">
+            <Text fw={600} size="lg">Filtros</Text>
+            {!isMobile && (
+              <Button
+                color="teal"
+                onClick={handleAddTransaction}
+                leftSection={<IconPlus size={18} />}
+                radius="md"
+              >
+                Nova Transação
               </Button>
-            </div>
-          )}
-        <Balance
-        transactions={filteredTransactions}
-        />
-        <DisplayBudget
-        transactions={filteredTransactions}
-        />
-        <div>
-            <Filters
+            )}
+          </Group>
+          <Filters
             filters={filters}
             setFilters={setFilters}
             getData={getData}
-            />
-          </div>
-          <Badge
-          color="gray"
-          variant="light"
-          radius="xl"
-          style={{ fontSize: 17, padding: '5px 5px', marginLeft: 2, marginTop: 16}}
-        >
-          Transações
-          </Badge>
-        <TransactionsTable
-          transactions={filteredTransactions}
-          setSelectedTransaction={setSelectedTransaction}
-          setFormMode={setFormMode}
-          setShowForm={setShowForm}
-          getData={getData}
-        />
+          />
+        </Card>
 
-      </Card>
-      <Modal centered size="lg" title={formMode === 'add' ? 'Adicione uma transação' : formMode === 'view' ? 'Detalhes' : 'Edite uma transação'} opened={showForm} onClose={() => setShowForm(false)}>
+        {/* Transactions */}
+        <Card mb="md" radius="lg" withBorder>
+          <Group justify="space-between" mb="md">
+            <Text fw={600} size="lg">Transações</Text>
+            <Badge color="teal" variant="light" size="lg">
+              {filteredTransactions.length} {filteredTransactions.length === 1 ? 'item' : 'itens'}
+            </Badge>
+          </Group>
+          <TransactionsTable
+            transactions={filteredTransactions}
+            setSelectedTransaction={setSelectedTransaction}
+            setFormMode={setFormMode}
+            setShowForm={setShowForm}
+            getData={getData}
+          />
+        </Card>
+
+        {/* Charts */}
+        <Card radius="lg" withBorder>
+          <Text fw={600} size="lg" mb="md">Gráficos</Text>
+          <PieChart transactions={filteredTransactions} />
+        </Card>
+      </Box>
+
+      <Modal
+        centered
+        size="lg"
+        title={
+          <Text fw={600}>
+            {formMode === 'add' ? 'Nova Transação' : formMode === 'view' ? 'Detalhes' : 'Editar Transação'}
+          </Text>
+        }
+        opened={showForm}
+        onClose={() => setShowForm(false)}
+        radius="lg"
+      >
         <TransactionForm
           formMode={formMode}
           setFormMode={setFormMode}
@@ -205,17 +237,6 @@ function Home() {
           getData={getData}
         />
       </Modal>
-      <Card>
-      <Badge
-          color="gray"
-          variant="light"
-          radius="xl"
-          style={{ fontSize: 17, padding: '5px 5px', marginLeft: 2, marginTop: 0, marginBottom: 16}}
-        >
-          Gráficos
-          </Badge>
-      <PieChart transactions={filteredTransactions} />
-      </Card>
     </Box>
   );
 }

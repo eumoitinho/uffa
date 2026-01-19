@@ -1,9 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-
-*{
-  font-family: 'Montserrat', sans-serif !important;
+* {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
 }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility classes */
 .h-screen {
   height: 100vh;
 }
@@ -11,6 +21,7 @@
 .flex {
   display: flex;
 }
+
 .flex-column {
   flex-direction: column;
 }
@@ -18,9 +29,11 @@
 .justify-center {
   justify-content: center;
 }
+
 .justify-between {
   justify-content: space-between;
 }
+
 .justify-end {
   justify-content: flex-end;
 }
@@ -28,171 +41,207 @@
 .items-center {
   align-items: center;
 }
+
 .items-end {
   align-items: flex-end;
 }
 
+.w-50 {
+  width: 50%;
+}
 
-.loader-parent{
-  position: absolute;
+.w-100 {
+  width: 100%;
+}
+
+/* Loader */
+.loader-parent {
+  position: fixed;
   inset: 0;
   height: 100vh;
   align-items: center;
   justify-content: center;
   display: flex;
-  z-index: 9999 !important;
-  background-color: rgba(255, 255, 255, 0.472);
+  z-index: 9999;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
 }
 
-.w-50{
-  width: 50%;
-}
-.w-100{
-  width: 100%;
-}
-
-i{
-  font-size: 1.2rem;
-  cursor: pointer;
-}
-
-.input{
-  border : 1px solid rgb(79, 83, 83) !important;
-}
-
-.container{
-  height: 85vh !important;
-}
-
-.mantine-xoj88x{
-  height: 100% !important;
-  overflow: scroll !important;
-}
-
-.auth{
-  background-color: #12B886;
-}
-
-.w-50{
-  width: 50%;
-}
-
-.w-100{
-  width: 100%;
-}
-
-i{
-  font-size: 1.2rem;
-}
-
-.red-row {
-  background-color: red;
-  color: white;
-}
-
+/* Mobile view */
 .mobile-view-container {
-  background-color: #f5f5f5; /* Cor de fundo desejada */
-  padding: 1rem; /* Espaçamento interno desejado */
-  border-radius: 5px; /* Cantos arredondados */
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .mobile-view-row {
-  background-color: #ffffff; /* Cor de fundo desejada */
-  padding: auto; /* Espaçamento interno desejado */
-  border-radius: 5px; /* Cantos arredondados */
+  background-color: #ffffff;
+  padding: 0.75rem;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.mobile-view-row:hover {
+  border-color: rgba(32, 201, 151, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .mobile-view-button {
-  background-color: #e0e0e0; /* Cor de fundo desejada */
-  margin-right: 0.5rem; /* Margem direita desejada */
+  background-color: #f1f3f4;
+  margin-right: 0.5rem;
+  border-radius: 8px;
 }
 
-.complex-swipeable-list__item.spaced {
-  margin-bottom: 10px; /* Defina o espaçamento vertical desejado */
-}
-
-.disabled-input {
-  background-color: #f5f5f5;
-  color: #000000;
-}
-
-.swipeable-list-item {
-  background-color: #ca0000;
-  padding: auto;
-  border-radius: 5px;
-}
-
-.swipeable-list-item .swipe-content {
-  background-color: #ca0000;
-  color: white;
-  display: flex;
-  align-items: left;
-  padding: auto;
-  justify-content: left;
-}
-
-.swipeable-list-item .delete-button {
-  color: rgb(238, 0, 0);
-  background-color: white;
-  border: none;
-  padding: 0;
-  margin: 0;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
+/* Transaction list */
 .transaction-list {
-  max-width: 400px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
 }
 
 .transaction {
   display: flex;
   align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.transaction:hover {
+  background-color: #f8f9fa;
+}
+
+.transaction:last-child {
+  border-bottom: none;
 }
 
 .transaction .date {
-  flex-basis: 30%;
-  font-weight: bold;
+  flex-basis: 25%;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #868e96;
 }
 
 .transaction .name {
-  flex-basis: 40%;
+  flex-basis: 45%;
+  font-weight: 500;
+  color: #1a1b1e;
 }
 
 .transaction .value {
   flex-basis: 30%;
   text-align: right;
+  font-weight: 600;
 }
 
+/* Empty state */
 .no-transactions-message {
-  padding: 2rem;
+  padding: 3rem 2rem;
   text-align: center;
-  font-weight: bold;
-  color: gray;
+  font-weight: 500;
+  color: #868e96;
+  font-size: 0.9rem;
 }
 
 .no-description {
-
-  font-weight: bold;
-  color: gray;
-  font: italic;
+  font-weight: 500;
+  color: #868e96;
+  font-style: italic;
 }
 
-.custom-card {
-  border-bottom: 2px solid rgb(115, 115, 115);
+/* Swipeable list */
+.complex-swipeable-list__item.spaced {
+  margin-bottom: 8px;
 }
 
+.swipeable-list-item {
+  background-color: #ff6b6b;
+  border-radius: 10px;
+}
+
+.swipeable-list-item .swipe-content {
+  background-color: #ff6b6b;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 12px;
+}
+
+.swipeable-list-item .delete-button {
+  color: #ff6b6b;
+  background-color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.swipeable-list-item .delete-button:hover {
+  background-color: #fff5f5;
+}
+
+/* Mobile container */
 .mobile-container-view {
   width: 100%;
   min-height: 160px;
-  background-color: #f5f5f5; /* Cor de fundo desejada */
-  padding: 1rem; /* Espaçamento interno desejado */
-  border-radius: 10px; /* Cantos arredondados */
-  margin: 3px ;
-  overflow-y: scroll;
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 12px;
+  margin: 4px 0;
+  overflow-y: auto;
   padding-bottom: 40px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* Misc */
+.disabled-input {
+  background-color: #f8f9fa;
+  color: #1a1b1e;
+}
+
+.custom-card {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+i {
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+
+.input {
+  border: 1px solid #dee2e6;
+}
+
+.auth {
+  background-color: #20c997;
+}
+
+.red-row {
+  background-color: #ff6b6b;
+  color: white;
+}

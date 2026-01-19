@@ -3,35 +3,41 @@ import styled from 'styled-components';
 export const Container = styled.div`
   display: flex;
   align-items: center;
-  background-color: #1A202C; 
-  font-size: 20px;
+  background: linear-gradient(135deg, rgba(32, 201, 151, 0.15) 0%, rgba(32, 201, 151, 0.05) 100%);
+  font-size: 14px;
+  font-weight: 500;
   color: white;
-  padding: 10px;
+  padding: 16px;
   cursor: pointer;
-  border-radius: 10px;
-  margin: 0 15px 20px;
-  z-index: 2;
+  border-radius: 12px;
+  margin: 0 0 16px 0;
+  border: 1px solid rgba(32, 201, 151, 0.2);
+  transition: all 0.2s ease;
 
   > div {
     display: flex;
     align-items: center;
-    flex: 1; /* Ocupa todo o espaço disponível */
+    flex: 1;
 
     img {
-      width: 50px;
-      height: 50px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       object-fit: cover;
-      margin-right: 10px; /* Espaçamento entre a foto e o nome */
+      border: 2px solid rgba(32, 201, 151, 0.5);
     }
 
     p {
-      margin: 0; /* Remove margem padrão do parágrafo */
-      margin-left: 10px; /* Espaçamento entre o nome e o ícone */
+      margin: 0;
+      margin-left: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
     }
   }
 
   &:hover {
-    background-color: black;
+    background: linear-gradient(135deg, rgba(32, 201, 151, 0.25) 0%, rgba(32, 201, 151, 0.1) 100%);
+    border-color: rgba(32, 201, 151, 0.4);
+    transform: translateY(-1px);
   }
 `;

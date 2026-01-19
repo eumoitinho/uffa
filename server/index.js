@@ -11,7 +11,17 @@ const PORT = process.env.PORT || 3001;
 // Rodar migrations automaticamente no startup
 const runMigrations = async () => {
   try {
-    await pool.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+    try {
+      await pool.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+      console.log('uuid-ossp extension created');
+    } catch (e) {
+      console.log('Could not create uuid-ossp, trying pgcrypto...');
+      try {
+        await pool.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+      } catch (e2) {
+        console.log('Extensions not available, using uuid_generate_v4 if available');
+      }
+    }
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -24,12 +34,29 @@ const runMigrations = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    await pool.query(`
-      ALTER TABLE users
-        ALTER COLUMN name DROP NOT NULL,
-        ALTER COLUMN password DROP NOT NULL,
-        ADD COLUMN IF NOT EXISTS google_id VARCHAR(255);
-    `);
+    // Run ALTER statements separately to avoid failures blocking each other
+    try {
+      await pool.query('ALTER TABLE users ALTER COLUMN name DROP NOT NULL;');
+    } catch (e) {
+      console.log('name column already nullable or does not exist');
+    }
+    try {
+      await pool.query('ALTER TABLE users ALTER COLUMN password DROP NOT NULL;');
+    } catch (e) {
+      console.log('password column already nullable or does not exist');
+    }
+    try {
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255);');
+      console.log('google_id column ensured');
+    } catch (e) {
+      console.log('google_id column error:', e.message);
+    }
+    try {
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS photo TEXT;');
+      console.log('photo column ensured');
+    } catch (e) {
+      console.log('photo column error:', e.message);
+    }
     await pool.query(`
       CREATE TABLE IF NOT EXISTS transactions (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
